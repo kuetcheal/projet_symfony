@@ -8,10 +8,16 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
-    //#[Route('/', name: 'home.index', methods: ['GET'])]
-    #[Route('/', 'home.index', methods: ['GET'])]
+    // #[Route('/', name: 'home.index', methods: ['GET'])]
+    #[Route('/home', name: 'home.index', methods: ['GET'])]
     public function index(): Response
     {
         return $this->render('home.html.twig');
+    }
+
+    #[Route('/', name: 'inscription.index', methods: ['GET'])]
+    public function inscription(): Response
+    {
+        return $this->render('inscription.html.twig');
     }
 }

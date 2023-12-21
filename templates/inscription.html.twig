@@ -1,0 +1,31 @@
+{% extends "base.html.twig" %}
+
+{% block title %}page de connexion{% endblock %}
+
+{% block body %}
+<form class="row g-3 needs-validation" novalidate>
+<div class="form-floating mb-3">
+  <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+  <label for="floatingInput">Email address</label>
+</div>
+<div class="form-floating">
+  <input type="text" class="form-control" id="floatingPassword" placeholder="user">
+  <label for="floatingPassword">user name</label>
+</div>
+ <div class="col-12">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="invalidCheck" required>
+      <label class="form-check-label" for="invalidCheck">
+        Agree to terms and conditions
+      </label>
+      <div class="invalid-feedback">
+        You must agree before submitting.
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <button class="btn btn-primary" type="submit">Submit form</button>
+  </div>
+</form>
+<a href="{{ path('home.index') }}" class="link-underline-primary">Aller à la page d'accueil</a>
+{% endblock %}
