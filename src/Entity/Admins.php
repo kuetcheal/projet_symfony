@@ -2,12 +2,18 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AdminsRepository;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity(repositoryClass: AdminsRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: ['get', 'post'],
+    itemOperations: ['get']
+)]
+// #[ORM\Entity(repositoryClass: ArticleRepository::class)]
+// #[ApiResource]
+
 class Admins
 {
     #[ORM\Id]
@@ -26,7 +32,6 @@ class Admins
         return $this->id;
     }
 
-
     public function getNom(): ?string
     {
         return $this->nom;
@@ -38,7 +43,6 @@ class Admins
 
         return $this;
     }
-
 
     public function getEmail(): ?string
     {

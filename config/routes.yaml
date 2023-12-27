@@ -1,5 +1,6 @@
+imports:
+  - { resource: "config/routes/api_platform.yaml" }
+
 controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+  resource: "../src/Controller/"
+  type: "annotation"
