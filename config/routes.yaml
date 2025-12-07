@@ -1,6 +1,3 @@
-imports:
-  - { resource: "config/routes/api_platform.yaml" }
-
 controllers:
   resource: "../src/Controller/"
-  type: "annotation"
+  type: "attribute"
