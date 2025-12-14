@@ -21,3 +21,22 @@ la sécurité globale de ton API
 # Résumé du fonctionnement du JWT dans notre API Symfony
 
 Le système d’authentification utilise LexikJWTAuthenticationBundle, basé sur une paire de clés RSA (privée/publique) pour signer et vérifier les tokens JWT. Lors de l’inscription, le mot de passe est haché puis stocké en base. La connexion via /api/login génère un JWT signé, renvoyé au client. Toutes les routes protégées sous /api/** nécessitent ensuite l’envoi du token dans le header Authorization: Bearer. Le firewall vérifie automatiquement le token et reconstruit l'utilisateur avant l’exécution de la route.
+
+# 5) Processus expliqué simplement (Cas A)
+
+Inscription (public)
+➡️ React/Postman envoie nom/email/password vers POST /api/register
+✅ Symfony crée User (pour la sécurité) + Client (profil)
+
+Connexion (public)
+➡️ envoie email/password vers POST /api/login
+✅ Symfony renvoie un JWT token
+
+Appels API (protégés)
+➡️ chaque requête vers /api/** doit envoyer :
+Authorization: Bearer <token>
+✅ Symfony laisse passer si token OK
+
+
+
+Mot de passe des appli : ahrmntiaoybxxyvg

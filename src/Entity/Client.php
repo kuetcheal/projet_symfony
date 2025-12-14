@@ -19,8 +19,10 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $password = null;
+    // ✅ Lien 1-1 vers User (obligatoire)
+    #[ORM\OneToOne(inversedBy: 'client', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -35,7 +37,6 @@ class Client
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
@@ -47,19 +48,17 @@ class Client
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    public function getPassword(): ?string
+    public function getUser(): ?User
     {
-        return $this->password;
+        return $this->user;
     }
 
-    public function setPassword(string $password): static
+    public function setUser(User $user): static
     {
-        $this->password = $password;
-
+        $this->user = $user;
         return $this;
     }
 }
