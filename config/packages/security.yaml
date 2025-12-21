@@ -13,6 +13,8 @@ security:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
+    main:
+      user_checker: App\Security\UserChecker
 
     # Endpoint de login JWT (pas de contrôleur, géré par Symfony)
     login:
@@ -35,4 +37,6 @@ security:
     #  l'ordre est important : la première règle qui matche gagne
     - { path: ^/api/login,    roles: PUBLIC_ACCESS }
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
+    - { path: ^/api/confirm, roles: PUBLIC_ACCESS }
+    - { path: ^/api/resend-confirmation, roles: PUBLIC_ACCESS }
     - { path: ^/api,          roles: ROLE_USER }

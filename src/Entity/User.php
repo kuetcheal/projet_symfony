@@ -28,6 +28,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: Client::class, cascade: ['persist', 'remove'])]
     private ?Client $client = null;
 
+    // =========================
+    // ✅ AJOUTS CONFIRMATION EMAIL
+    // =========================
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+
+    #[ORM\Column(length: 6, nullable: true)]
+    private ?string $emailVerificationCode = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $emailVerificationExpiresAt = null;
+
+    // =========================
+    // ✅ GETTERS / SETTERS EXISTANTS
+    // =========================
+
     public function getId(): ?int
     {
         return $this->id;
@@ -85,11 +102,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->client = $client;
 
-        // assure la cohérence du lien
         if ($client && $client->getUser() !== $this) {
             $client->setUser($this);
         }
 
+        return $this;
+    }
+
+    // =========================
+    // ✅ GETTERS / SETTERS CONFIRMATION EMAIL
+    // =========================
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+    public function getEmailVerificationCode(): ?string
+    {
+        return $this->emailVerificationCode;
+    }
+
+    public function setEmailVerificationCode(?string $code): static
+    {
+        $this->emailVerificationCode = $code;
+        return $this;
+    }
+
+    public function getEmailVerificationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->emailVerificationExpiresAt;
+    }
+
+    public function setEmailVerificationExpiresAt(?\DateTimeImmutable $expiresAt): static
+    {
+        $this->emailVerificationExpiresAt = $expiresAt;
         return $this;
     }
 }
