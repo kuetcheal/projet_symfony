@@ -18,11 +18,12 @@ use Symfony\Component\Mime\Email;
 class AuthController extends AbstractController
 {
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
+    
     public function register(
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
-        MailerInterface $mailer // ✅ si tu veux envoyer le mail ici
+        MailerInterface $mailer //  si tu veux envoyer le mail ici
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -33,23 +34,23 @@ class AuthController extends AbstractController
             );
         }
 
-        // ✅ 1) Créer le User (auth)
+        //  1) Créer le User (auth)
         $user = new User();
         $user->setEmail($data['email']);
 
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
 
-        // ✅ 2) Créer le Client (profil)
+        //  2) Créer le Client (profil)
         $client = new Client();
         $client->setNom($data['nom']);
-        $client->setEmail($data['email']); // (souvent pareil que user.email)
+        $client->setEmail($data['email']); 
         $client->setUser($user);
 
         // (optionnel) lier inverse si tu as setClient dans User
         $user->setClient($client);
 
-        // ✅ 3) Persist + flush
+        //  Persist + flush
         $em->persist($user);
         $em->persist($client);
         $em->flush();

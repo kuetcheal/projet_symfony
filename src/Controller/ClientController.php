@@ -20,7 +20,7 @@ class ClientController extends AbstractController
                 'id'    => $client->getId(),
                 'nom'   => $client->getNom(),
                 'email' => $client->getEmail(),
-                'userId'=> $client->getUser()?->getId(), // si tu as bien ajouté la relation
+                'userId'=> $client->getUser()?->getId(), 
             ];
         }
 

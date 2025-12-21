@@ -32,7 +32,7 @@ security:
       jwt: ~
 
   access_control:
-    # ⚠️ l'ordre est important : la première règle qui matche gagne
+    #  l'ordre est important : la première règle qui matche gagne
     - { path: ^/api/login,    roles: PUBLIC_ACCESS }
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
     - { path: ^/api,          roles: ROLE_USER }
