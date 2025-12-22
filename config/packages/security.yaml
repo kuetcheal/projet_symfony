@@ -13,10 +13,14 @@ security:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
+
+ 
     main:
+      pattern: ^/(?!api)   # tout SAUF /api
+      lazy: true
       user_checker: App\Security\UserChecker
 
-    # Endpoint de login JWT (pas de contrôleur, géré par Symfony)
+    # ✅ Endpoint de login JWT (géré par Symfony/Lexik)
     login:
       pattern: ^/api/login
       stateless: true
@@ -27,16 +31,18 @@ security:
         success_handler: lexik_jwt_authentication.handler.authentication_success
         failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-    # Toutes les autres routes /api/** protégées par JWT
+    # ✅ Toutes les autres routes /api/** protégées par JWT
     api:
       pattern: ^/api
       stateless: true
       jwt: ~
 
   access_control:
-    #  l'ordre est important : la première règle qui matche gagne
-    - { path: ^/api/login,    roles: PUBLIC_ACCESS }
-    - { path: ^/api/register, roles: PUBLIC_ACCESS }
-    - { path: ^/api/confirm, roles: PUBLIC_ACCESS }
+    # l'ordre est important : la première règle qui matche gagne
+    - { path: ^/api/login,               roles: PUBLIC_ACCESS }
+    - { path: ^/api/register,            roles: PUBLIC_ACCESS }
+    - { path: ^/api/confirm,             roles: PUBLIC_ACCESS }
     - { path: ^/api/resend-confirmation, roles: PUBLIC_ACCESS }
-    - { path: ^/api,          roles: ROLE_USER }
+    - { path: ^/api/forgot-password,     roles: PUBLIC_ACCESS }
+    - { path: ^/api/reset-password,      roles: PUBLIC_ACCESS }
+    - { path: ^/api,                     roles: ROLE_USER }

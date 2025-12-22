@@ -3,11 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -29,20 +31,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Client $client = null;
 
     // =========================
-    // ✅ AJOUTS CONFIRMATION EMAIL
+    // ✅ CONFIRMATION EMAIL
     // =========================
 
-    #[ORM\Column(type: 'boolean')]
+    #[ORM\Column(options: ['default' => false])]
     private bool $isVerified = false;
 
     #[ORM\Column(length: 6, nullable: true)]
     private ?string $emailVerificationCode = null;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $emailVerificationExpiresAt = null;
 
     // =========================
-    // ✅ GETTERS / SETTERS EXISTANTS
+    // ✅ RESET PASSWORD (MOT DE PASSE OUBLIÉ)
+    // =========================
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+    // =========================
+    // ✅ GETTERS / SETTERS
     // =========================
 
     public function getId(): ?int
@@ -92,7 +104,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void {}
 
-    // ✅ getters/setters client
+    // ✅ client
     public function getClient(): ?Client
     {
         return $this->client;
@@ -110,10 +122,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     // =========================
-    // ✅ GETTERS / SETTERS CONFIRMATION EMAIL
+    // ✅ CONFIRMATION EMAIL
     // =========================
 
     public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    // ✅ pratique quand tu veux sérialiser/mapper facilement
+    public function getIsVerified(): bool
     {
         return $this->isVerified;
     }
@@ -143,6 +161,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailVerificationExpiresAt(?\DateTimeImmutable $expiresAt): static
     {
         $this->emailVerificationExpiresAt = $expiresAt;
+        return $this;
+    }
+
+    // =========================
+    // ✅ RESET PASSWORD
+    // =========================
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeImmutable $expiresAt): static
+    {
+        $this->resetTokenExpiresAt = $expiresAt;
+        return $this;
+    }
+
+    // ✅ helpers pratiques
+    public function clearResetToken(): static
+    {
+        $this->resetToken = null;
+        $this->resetTokenExpiresAt = null;
         return $this;
     }
 }
