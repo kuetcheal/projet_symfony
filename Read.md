@@ -40,3 +40,13 @@ Authorization: Bearer <token>
 
 
 Mot de passe des appli : ahrmntiaoybxxyvg
+
+
+
+### Rôle de VichUploaderBundle
+Le bundle a été installé et configuré pour une gestion “standardisée” des fichiers (mappings, destination, uri_prefix).
+Dans cette version, l’upload est réalisé via un contrôleur API (gestion manuelle), ce qui permet un contrôle fin des validations et une intégration simple avec Postman/Front.
+L’activation complète de Vich au niveau entity (annotations UploadableField) est possible en évolution.
+
+Tu peux inclure cette phrase :
+“Conformément aux bonnes pratiques, seul le chemin du fichier est persisté en base ; le binaire reste sur le système de fichiers afin d’éviter l’usage de BLOB, coûteux en performance et en maintenance.”
