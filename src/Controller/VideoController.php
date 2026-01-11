@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Video;
+use App\Entity\Comment;
 use App\Repository\VideoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,6 +23,7 @@ class VideoController extends AbstractController
         /** @var UploadedFile|null $file */
         $file = $request->files->get('video');
         $title = trim((string) $request->request->get('title', ''));
+        $category = trim((string) $request->request->get('category', ''));
 
         if ($title === '') {
             return $this->json(['message' => 'Champ requis: title'], 400);
@@ -29,15 +31,15 @@ class VideoController extends AbstractController
 
         if (!$file) {
             return $this->json([
-                'message' => 'Aucun fichier reçu (champ video)',
+                'message'        => 'Aucun fichier reçu (champ video)',
                 'received_files' => array_keys($request->files->all()),
             ], 400);
         }
 
         if (!$file->isValid()) {
             return $this->json([
-                'message' => 'Upload invalide',
-                'php_error_code' => $file->getError(),
+                'message'           => 'Upload invalide',
+                'php_error_code'    => $file->getError(),
                 'php_error_message' => $file->getErrorMessage(),
             ], 400);
         }
@@ -47,7 +49,7 @@ class VideoController extends AbstractController
         $allowedMime = ['video/mp4', 'application/octet-stream'];
         if (!$mime || !in_array($mime, $allowedMime, true)) {
             return $this->json([
-                'message' => 'Format non supporté (mp4 uniquement)',
+                'message'       => 'Format non supporté (mp4 uniquement)',
                 'mime_received' => $mime,
             ], 400);
         }
@@ -61,7 +63,8 @@ class VideoController extends AbstractController
         }
 
         $projectDir = $this->getParameter('kernel.project_dir');
-        $uploadDir = $projectDir . '/public/uploads/videos';
+        $uploadDir  = $projectDir . '/public/uploads/videos';
+
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
             return $this->json(['message' => 'Impossible de créer uploads/videos'], 500);
         }
@@ -73,7 +76,7 @@ class VideoController extends AbstractController
         } catch (\Throwable $e) {
             return $this->json([
                 'message' => 'Erreur move(): le fichier temporaire est peut-être inaccessible (WAMP tmp)',
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
 
@@ -87,35 +90,55 @@ class VideoController extends AbstractController
         $video->setMimeType($mime);
         $video->setSizeBytes($finalSize);
 
+        if ($category !== '') {
+            $video->setCategory($category);
+        }
+
         $em->persist($video);
         $em->flush();
 
         return $this->json([
-            'id' => $video->getId(),
-            'title' => $video->getTitle(),
-            'filePath' => $video->getFilePath(),
-            'mimeType' => $video->getMimeType(),
-            'sizeBytes' => $video->getSizeBytes(),
-            'createdAt' => $video->getCreatedAt()->format(DATE_ATOM),
+            'id'            => $video->getId(),
+            'title'         => $video->getTitle(),
+            'filePath'      => $video->getFilePath(),
+            'mimeType'      => $video->getMimeType(),
+            'sizeBytes'     => $video->getSizeBytes(),
+            'createdAt'     => $video->getCreatedAt()->format(DATE_ATOM),
+            'category'      => $video->getCategory(),
+            'viewsCount'    => $video->getViewsCount(),
+            'likesCount'    => $video->getLikesCount(),
+            'dislikesCount' => $video->getDislikesCount(),
+            'commentsCount' => $video->getCommentsCount(),
         ], 201);
     }
 
     // ---------------------------
-    // READ ALL
+    // READ ALL (+ filtre catégorie)
     // ---------------------------
     #[Route('/api/videos', name: 'api_videos_list', methods: ['GET'])]
-    public function list(VideoRepository $repo): JsonResponse
+    public function list(VideoRepository $repo, Request $request): JsonResponse
     {
-        $videos = $repo->findBy([], ['id' => 'DESC']);
+        $category = $request->query->get('category');
+
+        if ($category) {
+            $videos = $repo->findBy(['category' => $category], ['id' => 'DESC']);
+        } else {
+            $videos = $repo->findBy([], ['id' => 'DESC']);
+        }
 
         $data = array_map(static function (Video $v) {
             return [
-                'id' => $v->getId(),
-                'title' => $v->getTitle(),
-                'filePath' => $v->getFilePath(),
-                'mimeType' => $v->getMimeType(),
-                'sizeBytes' => $v->getSizeBytes(),
-                'createdAt' => $v->getCreatedAt()->format(DATE_ATOM),
+                'id'            => $v->getId(),
+                'title'         => $v->getTitle(),
+                'filePath'      => $v->getFilePath(),
+                'mimeType'      => $v->getMimeType(),
+                'sizeBytes'     => $v->getSizeBytes(),
+                'createdAt'     => $v->getCreatedAt()->format(DATE_ATOM),
+                'category'      => $v->getCategory(),
+                'viewsCount'    => $v->getViewsCount(),
+                'likesCount'    => $v->getLikesCount(),
+                'dislikesCount' => $v->getDislikesCount(),
+                'commentsCount' => $v->getCommentsCount(),
             ];
         }, $videos);
 
@@ -135,13 +158,139 @@ class VideoController extends AbstractController
         }
 
         return $this->json([
-            'id' => $video->getId(),
-            'title' => $video->getTitle(),
-            'filePath' => $video->getFilePath(),
-            'mimeType' => $video->getMimeType(),
-            'sizeBytes' => $video->getSizeBytes(),
-            'createdAt' => $video->getCreatedAt()->format(DATE_ATOM),
+            'id'            => $video->getId(),
+            'title'         => $video->getTitle(),
+            'filePath'      => $video->getFilePath(),
+            'mimeType'      => $video->getMimeType(),
+            'sizeBytes'     => $video->getSizeBytes(),
+            'createdAt'     => $video->getCreatedAt()->format(DATE_ATOM),
+            'category'      => $video->getCategory(),
+            'viewsCount'    => $video->getViewsCount(),
+            'likesCount'    => $video->getLikesCount(),
+            'dislikesCount' => $video->getDislikesCount(),
+            'commentsCount' => $video->getCommentsCount(),
         ], 200);
+    }
+
+    // ---------------------------
+    // INCREMENT VIEW
+    // ---------------------------
+    #[Route('/api/videos/{id}/view', name: 'api_videos_view', methods: ['POST'])]
+    public function addView(int $id, VideoRepository $repo, EntityManagerInterface $em): JsonResponse
+    {
+        $video = $repo->find($id);
+        if (!$video) {
+            return $this->json(['message' => 'Vidéo introuvable'], 404);
+        }
+
+        $video->incrementViews();
+        $em->flush();
+
+        return $this->json([
+            'viewsCount' => $video->getViewsCount(),
+        ], 200);
+    }
+
+    // ---------------------------
+    // LIKE
+    // ---------------------------
+    #[Route('/api/videos/{id}/like', name: 'api_videos_like', methods: ['POST'])]
+    public function like(int $id, Request $request, VideoRepository $repo, EntityManagerInterface $em): JsonResponse
+    {
+        $video = $repo->find($id);
+        if (!$video) {
+            return $this->json(['message' => 'Vidéo introuvable'], 404);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $liked   = (bool) ($payload['liked'] ?? false);
+
+        if ($liked) {
+            $video->incrementLikes();
+        } else {
+            $video->decrementLikes();
+        }
+
+        $em->flush();
+
+        return $this->json([
+            'likesCount' => $video->getLikesCount(),
+        ], 200);
+    }
+
+    // ---------------------------
+    // DISLIKE
+    // ---------------------------
+    #[Route('/api/videos/{id}/dislike', name: 'api_videos_dislike', methods: ['POST'])]
+    public function dislike(int $id, Request $request, VideoRepository $repo, EntityManagerInterface $em): JsonResponse
+    {
+        $video = $repo->find($id);
+        if (!$video) {
+            return $this->json(['message' => 'Vidéo introuvable'], 404);
+        }
+
+        $payload   = json_decode($request->getContent(), true) ?? [];
+        $disliked  = (bool) ($payload['disliked'] ?? false);
+
+        if ($disliked) {
+            $video->incrementDislikes();
+        } else {
+            $video->decrementDislikes();
+        }
+
+        $em->flush();
+
+        return $this->json([
+            'dislikesCount' => $video->getDislikesCount(),
+        ], 200);
+    }
+
+    // ---------------------------
+    // ADD COMMENT
+    // ---------------------------
+    #[Route('/api/videos/{id}/comments', name: 'api_video_add_comment', methods: ['POST'])]
+    public function addComment(
+        int $id,
+        Request $request,
+        VideoRepository $videoRepo,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $video = $videoRepo->find($id);
+
+        if (!$video) {
+            return $this->json(['message' => 'Vidéo introuvable'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        $authorName = isset($data['authorName']) ? trim((string) $data['authorName']) : null;
+        if ($authorName === '') {
+            $authorName = null;
+        }
+
+        $content = trim((string) ($data['content'] ?? ''));
+        if ($content === '') {
+            return $this->json(['message' => 'Le commentaire ne peut pas être vide'], 400);
+        }
+
+        $comment = new Comment();
+        $comment->setVideo($video);
+        $comment->setAuthorName($authorName);
+        $comment->setContent($content);
+
+        $video->incrementCommentsCount();
+
+        $em->persist($comment);
+        $em->persist($video);
+        $em->flush();
+
+        return $this->json([
+            'id'            => $comment->getId(),
+            'authorName'    => $comment->getAuthorName(),
+            'content'       => $comment->getContent(),
+            'createdAt'     => $comment->getCreatedAt()->format(DATE_ATOM),
+            'commentsCount' => $video->getCommentsCount(),
+        ], 201);
     }
 
     // ---------------------------
